@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"math/rand"
 	"testing"
 	"time"
@@ -33,15 +32,10 @@ func getTestParcel() Parcel {
 // TestAddGetDelete проверяет добавление, получение и удаление посылки
 func TestAddGetDelete(t *testing.T) {
 	// prepare
-	db, err := sql.Open("sqlite", "tracker.db")// настройте подключение к БД
-
-	if err != nil {
-
-		fmt.Println(err)
-		return
-	}
-
+	db, err := sql.Open("sqlite", "tracker.db") // настройте подключение к БД
+	require.NoError(t, err)
 	defer db.Close()
+
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
 
@@ -50,7 +44,7 @@ func TestAddGetDelete(t *testing.T) {
 
 	id, err := store.Add(parcel)
 	assert.NoError(t, err)
-	require.Greater(t, id)
+	require.Greater(t, id, 0)
 
 	// get
 	// получите только что добавленную посылку, убедитесь в отсутствии ошибки
@@ -125,7 +119,7 @@ func TestSetStatus(t *testing.T) {
 	// set status
 	// обновите статус, убедитесь в отсутствии ошибки
 
-	err = store.SetStatus(id, statusParcel)
+	err = store.SetStatus(id, ParcelStatusSent)
 	assert.NoError(t, err)
 
 	// check
@@ -133,7 +127,7 @@ func TestSetStatus(t *testing.T) {
 
 	storedParcel, err := store.Get(id)
 	assert.NoError(t, err)
-	assert.Equal(t, statusParcel, storedParcel.Status)
+	assert.Equal(t, ParcelStatusSent, storedParcel.Status)
 }
 
 // TestGetByClient проверяет получение посылок по идентификатору клиента
@@ -171,7 +165,7 @@ func TestGetByClient(t *testing.T) {
 	}
 
 	// get by client
-	storedParcels, err := store.GetByClient(client)// получите список посылок по идентификатору клиента, сохранённого в переменной client
+	storedParcels, err := store.GetByClient(client) // получите список посылок по идентификатору клиента, сохранённого в переменной client
 	// убедитесь в отсутствии ошибки
 	// убедитесь, что количество полученных посылок совпадает с количеством добавленных
 
